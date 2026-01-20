@@ -27,17 +27,18 @@ class SocialAuthController extends Controller
                         ->first();
 
             if (!$user) {
-                // Jika user belum ada, buat baru
                 $user = User::create([
                     'name' => $socialUser->getName(),
                     'email' => $socialUser->getEmail(),
-                    'password' => bcrypt(Str::random(16)), // Password dummy acak
-                    'role' => 'user', // Default role
+                    'password' => bcrypt(Str::random(16)),
                     $provider . '_id' => $socialUser->getId(),
                     'avatar' => $socialUser->getAvatar(),
                 ]);
+
+                // Assign Role menggunakan Spatie
+                $user->assignRole('user');
             } else {
-                // Jika user ada tapi belum link ID provider, update datanya
+                // Jika user ada tapi belum link ID provider, update datannya
                 if (empty($user->{$provider . '_id'})) {
                     $user->update([
                         $provider . '_id' => $socialUser->getId(),
@@ -53,17 +54,16 @@ class SocialAuthController extends Controller
             return $this->redirectBasedOnRole($user);
 
         } catch (\Exception $e) {
-            dd($e->getMessage());
-            // return redirect('/login')->with('error', 'Gagal login dengan ' . $provider);
+            return redirect()->back()->with('error', 'Gagal login dengan ' . $provider);
         }
     }
 
     // Helper redirect role
-    protected function redirectBasedOnRole($user)
+   protected function redirectBasedOnRole($user)
     {
-        if ($user->role === 'admin') {
-            return redirect()->intended(route('admin.dashboard'));
+        if ($user->hasRole('admin')) {
+            return redirect()->route('admin.dashboard');
         }
-        return redirect()->intended(route('dashboard'));
+        return redirect()->route('dashboard');
     }
 }
