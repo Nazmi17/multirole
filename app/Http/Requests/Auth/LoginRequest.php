@@ -27,7 +27,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'login' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -37,21 +37,29 @@ class LoginRequest extends FormRequest
      *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function authenticate(): void
-    {
-        $this->ensureIsNotRateLimited();
+ public function authenticate(): void
+{
+    $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+    // 1. Ambil input
+    $login = $this->input('login');
 
-            throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
-            ]);
-        }
+    // 2. Cek tipe (Email atau Username)
+    $fieldType = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
 
-        RateLimiter::clear($this->throttleKey());
+    // 3. Coba Login
+    if (! Auth::attempt([$fieldType => $login, 'password' => $this->input('password')], $this->boolean('remember'))) {
+        
+        RateLimiter::hit($this->throttleKey());
+
+        // Lempar error validasi standar (supaya muncul teks merah di bawah input)
+        throw ValidationException::withMessages([
+            'login' => trans('auth.failed'),
+        ]);
     }
 
+    RateLimiter::clear($this->throttleKey());
+}
     /**
      * Ensure the login request is not rate limited.
      *
@@ -80,6 +88,6 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->string('login')).'|'.$this->ip());
     }
 }

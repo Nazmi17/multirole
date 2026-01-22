@@ -9,13 +9,11 @@ use Illuminate\Support\Str;
 
 class SocialAuthController extends Controller
 {
-    // 1. Redirect ke Provider (Google/FB)
     public function redirect($provider)
     {
         return Socialite::driver($provider)->redirect();
     }
 
-    // 2. Callback dari Provider
     public function callback($provider)
     {
         try {
@@ -27,42 +25,68 @@ class SocialAuthController extends Controller
                         ->first();
 
             if (!$user) {
+                // --- KASUS: USER BARU ---
+                // Kita harus generate username karena kolom ini sekarang wajib/required
+                // Contoh hasil: budi-santoso-882
+                $generatedUsername = Str::slug($socialUser->getName()) . '-' . rand(100, 999);
+
                 $user = User::create([
-                    'name' => $socialUser->getName(),
-                    'email' => $socialUser->getEmail(),
-                    'password' => bcrypt(Str::random(16)),
-                    $provider . '_id' => $socialUser->getId(),
-                    'avatar' => $socialUser->getAvatar(),
+                    'name'              => $socialUser->getName(),
+                    'username'          => $generatedUsername, // <--- PERBAIKAN 1: Tambah Username
+                    'email'             => $socialUser->getEmail(),
+                    'password'          => bcrypt(Str::random(16)), // Password acak
+                    'email_verified_at' => now(), 
+                    $provider . '_id'   => $socialUser->getId(),
+                    'avatar'            => $socialUser->getAvatar(),
+                    'is_active'         => true,
+                    'is_profile_complete' => false,
                 ]);
 
-                // Assign Role menggunakan Spatie
-                $user->assignRole('user');
+                // Assign Role Default (Pastikan nama role 'staff' atau 'user' ada di database)
+                $user->assignRole('user'); 
             } else {
-                // Jika user ada tapi belum link ID provider, update datannya
+                // --- KASUS: USER LAMA ---
+                // Update ID provider jika belum ada
                 if (empty($user->{$provider . '_id'})) {
                     $user->update([
                         $provider . '_id' => $socialUser->getId(),
-                        'avatar' => $socialUser->getAvatar(), // Update avatar jika perlu
+                        'avatar'          => $socialUser->getAvatar(),
                     ]);
+                }
+                
+                // <--- PERBAIKAN 3: Cek Role untuk user lama
+                // Jika user lama ini belum punya role (misal sisa testing sebelumnya), kasih role.
+                if ($user->roles->isEmpty()) {
+                    $user->assignRole('staff');
                 }
             }
 
             // Login user
             Auth::login($user);
 
-            // Redirect sesuai role
+            if (! $user->is_active) {
+                Auth::logout();
+                return redirect('/login')->withErrors( 'Akun Google Anda dinonaktifkan oleh Admin.');
+            }
+
+            if (!$user->is_profile_complete) {
+                return redirect()->route('profile.edit')->with('warning', 'Silakan lengkapi Username dan Password Anda terlebih dahulu.');
+            }
+
             return $this->redirectBasedOnRole($user);
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal login dengan ' . $provider);
+            // Debugging: Uncomment baris di bawah untuk melihat error aslinya di layar
+            // dd($e->getMessage()); 
+            
+            return redirect('/login')->with('error', 'Gagal login: ' . $e->getMessage());
         }
     }
 
-    // Helper redirect role
-   protected function redirectBasedOnRole($user)
+    protected function redirectBasedOnRole($user)
     {
         if ($user->hasRole('admin')) {
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('admin.users.index'); // Sesuaikan route admin kamu
         }
         return redirect()->route('dashboard');
     }

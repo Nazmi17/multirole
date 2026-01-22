@@ -3,52 +3,89 @@
         <h2 class="text-lg font-medium text-gray-900">
             {{ __('Profile Information') }}
         </h2>
-
         <p class="mt-1 text-sm text-gray-600">
-            {{ __("Update your account's profile information and email address.") }}
+            Update username, nama, dan password akun Anda.
         </p>
     </header>
 
-    <form id="send-verification" method="post" action="{{ route('verification.send') }}">
+    <form id="send-verification" method="post" action="{{ route('verification.send') }}" enctype="multipart/form-data">
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6" enctype="multipart/form-data">
         @csrf
         @method('patch')
 
+        <div class="flex items-center space-x-6">
+            <div class="shrink-0">
+                {{-- Tampilkan Avatar User (Gunakan Accessor nanti) --}}
+<img 
+    src="{{ $user->avatar_url }}" 
+    alt="{{ $user->name }}" 
+    class="rounded-full h-20 w-20 object-cover"
+>            </div>
+            <label class="block">
+                <span class="sr-only">Choose profile photo</span>
+                <input type="file" name="avatar" 
+                    class="block w-full text-sm text-slate-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-violet-50 file:text-violet-700
+                    hover:file:bg-violet-100
+                "/>
+                <x-input-error class="mt-2" :messages="$errors->get('avatar')" />
+            </label>
+        </div>
+
+        {{-- Input Name (Sudah ada) --}}
         <div>
             <x-input-label for="name" :value="__('Name')" />
             <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
 
+        {{-- Input Username (Sudah ada) --}}
+        <div>
+            <x-input-label for="username" :value="__('Username')" />
+            <x-text-input id="username" name="username" type="text" 
+                          class="mt-1 block w-full bg-gray-50" 
+                          :value="old('username', $user->username)" 
+                          required autocomplete="username" />
+            <x-input-error class="mt-2" :messages="$errors->get('username')" />
+        </div>
+
+        {{-- Input Email (Sudah ada) --}}
         <div>
             <x-input-label for="email" :value="__('Email')" />
             <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
             <x-input-error class="mt-2" :messages="$errors->get('email')" />
-
-            @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
-                <div>
-                    <p class="text-sm mt-2 text-gray-800">
-                        {{ __('Your email address is unverified.') }}
-
-                        <button form="send-verification" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            {{ __('Click here to re-send the verification email.') }}
-                        </button>
-                    </p>
-
-                    @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600">
-                            {{ __('A new verification link has been sent to your email address.') }}
-                        </p>
-                    @endif
-                </div>
-            @endif
+            
+            {{-- Logic verifikasi email ... --}}
         </div>
 
-        <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+        <div class="border-t border-gray-200 pt-4 mt-4">
+             <h3 class="text-md font-medium text-gray-900 mb-4">Ubah Password</h3>
+             
+             {{-- Input New Password --}}
+             <div>
+                <x-input-label for="password" :value="__('New Password')" />
+                {{-- Tambahkan placeholder agar user tahu ini opsional bagi user lama --}}
+                <x-text-input id="password" name="password" type="password" class="mt-1 block w-full" autocomplete="new-password" placeholder="Kosongkan jika tidak ingin mengubah password" />
+                
+                {{-- Perhatikan: messages ambil dari $errors->get('password'), BUKAN updatePassword --}}
+                <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            </div>
+
+            {{-- Input Confirm Password --}}
+            <div class="mt-4">
+                <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+                <x-text-input id="password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" autocomplete="new-password" />
+                <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+            </div>
+        </div>
+        <div class="flex items-center gap-4 mt-6">
+            <x-primary-button>{{ __('Save All Changes') }}</x-primary-button>
 
             @if (session('status') === 'profile-updated')
                 <p

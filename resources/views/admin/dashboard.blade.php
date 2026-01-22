@@ -56,7 +56,7 @@
                                         <h4 class="text-lg font-bold text-gray-800 capitalize flex items-center">
                                             Role: {{ $role->name }}
                                             @if($role->name === 'admin')
-                                                <span class="ml-2 px-2 py-0.5 text-xs bg-red-100 text-red-800 rounded">Super User</span>
+                                                <span class="ml-2 px-2 py-0.5 text-xs bg-red-100 text-red-800 rounded">Super Admin</span>
                                             @endif
                                         </h4>
                                         
@@ -75,7 +75,6 @@
                                         
                                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-12 mb-4">
                                         @foreach($permissions as $permission)
-                                            {{-- Menambahkan gap-x-3 untuk memberi jarak horizontal --}}
                                             <div class="flex items-start gap-y-20"> 
                                                 <div class="flex h-5 items-center">
                                                     <input 
@@ -84,12 +83,10 @@
                                                         value="{{ $permission->name }}" 
                                                         type="checkbox" 
                                                         class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                                        {{-- Cek apakah role ini punya permission tersebut --}}
                                                         @checked($role->hasPermissionTo($permission->name))
                                                     >
                                                 </div>
                                                 &nbsp;
-                                                {{-- Menghapus ml-3 karena sudah digantikan oleh gap-x-3 di parent --}}
                                                 <div class="text-sm">
                                                     <label for="perm_{{ $role->id }}_{{ $permission->id }}" class="font-medium text-gray-700 select-none cursor-pointer">
                                                         {{ $permission->name }}

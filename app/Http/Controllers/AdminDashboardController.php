@@ -20,6 +20,12 @@ class AdminDashboardController extends Controller
         // Hitung total user (opsional, untuk statistik)
         $totalUsers = User::count();
 
+        if (auth()->user()->hasRole('admin')) {
+        $roles = Role::all();
+        } else {
+            $roles = Role::where('name', '!=', 'admin')->get();
+        }
+
         return view('admin.dashboard', compact('roles', 'permissions', 'totalUsers'));
     }
 

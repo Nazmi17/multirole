@@ -15,7 +15,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
-    Route::middleware(['can: Edit profile'])->group(function () {
+    Route::middleware(['can:Edit profile'])->group(function () {
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -35,25 +35,25 @@ Route::get('auth/{provider}/callback', [SocialAuthController::class, 'callback']
 
 // 2. Multi-role Routes
 // Dashboard untuk USER BIASA
-Route::middleware(['auth', 'verified', 'role:user'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
-});
+Route::middleware(['auth', 'verified'])->group(function () {
+     Route::get('/dashboard', function () {
+         return view('dashboard');
+     })->name('dashboard');
+      });
 
 // Dashboard untuk ADMIN
-Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified'])->prefix('admin')->group(function () {
     // Halaman Utama Dashboard Admin
-    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     
     // Action untuk Tambah Role Baru
-    Route::post('/roles', [AdminDashboardController::class, 'storeRole'])->name('roles.store');
+    Route::post('/roles', [AdminDashboardController::class, 'storeRole'])->name('admin.roles.store');
     
     // Action untuk Update Permission pada Role (Centang Checkbox)
-    Route::put('/roles/{role}/permissions', [AdminDashboardController::class, 'updateRolePermissions'])->name('roles.permissions.update');
+    Route::put('/roles/{role}/permissions', [AdminDashboardController::class, 'updateRolePermissions'])->name('admin.roles.permissions.update');
     
     // Action untuk Hapus Role
-    Route::delete('/roles/{role}', [AdminDashboardController::class, 'destroyRole'])->name('roles.destroy');
+    Route::delete('/roles/{role}', [AdminDashboardController::class, 'destroyRole'])->name('admin.roles.destroy');
 });
 
 require __DIR__.'/auth.php';

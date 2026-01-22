@@ -37,10 +37,16 @@
                                     Nama
                                 </th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Username
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Email
                                 </th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Role
+                                </th>
+                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Status
                                 </th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Bergabung
@@ -59,15 +65,43 @@
                                         <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-500">{{ $user->username }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-500">{{ $user->email }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @foreach($user->getRoleNames() as $role)
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                                {{ $role === 'admin' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
-                                                {{ ucfirst($role) }}
+                                            {{-- Tentukan Warna Badge --}}
+                                            @php
+                                                $badgeClass = match($role) {
+                                                    'admin'     => 'bg-red-100 text-red-800',   
+                                                    'Pengelola' => 'bg-blue-100 text-blue-800', 
+                                                    default     => 'bg-green-100 text-green-800' 
+                                                };
+
+                                                $roleName = match($role) {
+                                                    'admin'     => 'Super Admin',
+                                                    'Pengelola' => 'Admin',
+                                                    default     => ucfirst($role)
+                                                };
+                                            @endphp
+
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $badgeClass }}">
+                                                {{ $roleName }}
                                             </span>
                                         @endforeach
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($user->is_active)
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Active
+                                            </span>
+                                        @else
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                                Inactive
+                                            </span>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         {{ $user->created_at->format('d M Y') }}
