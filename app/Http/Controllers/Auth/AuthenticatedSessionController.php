@@ -63,3 +63,14 @@ class AuthenticatedSessionController extends Controller
 // nambah foto/avatar
 // role langsung kepilih (beres)
 // kalau login pake googlw, setelah login langsung ke edit profile edit-edit name dan username dan password, si user ga bisa ke halaman lain sebelum nyelesain ini
+
+// saat ada user terdaftar, notifikasi email selamat ke user dan pemberitahuan ke admin
+// ada online/offline di dashboard
+// google capcha di login
+// google authentificator tambahin
+// tambahan verifikasi password di profile
+// search
+// soft delete
+// saat delete harus verifikasi (nomor/email) (prioritas tarakhir)
+
+// restack editor buat artikel

@@ -35,6 +35,12 @@
                 </a>
             @endif
 
+             @if (Route::has('registert'))
+                <a class="underline justify-self-start text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
+                    {{ __('Register') }}
+                </a>
+            @endif
+
             <x-primary-button class="ms-3">
                 {{ __('Log in') }}
             </x-primary-button>

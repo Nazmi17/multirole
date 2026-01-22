@@ -66,11 +66,16 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::make(
             get: function () {
-                if ($this->avatar) {
-                    return url('storage/' . $this->avatar);
+                if (empty($this->avatar)) {
+                    return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
                 }
 
-                return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=7F9CF5&background=EBF4FF';
+                // 2. [FIX] Cek apakah ini URL Eksternal (dari Google)?
+                if (filter_var($this->avatar, FILTER_VALIDATE_URL)) {
+                    return $this->avatar;
+                }
+
+                return url('storage/' . $this->avatar);
             },
         );
     }
