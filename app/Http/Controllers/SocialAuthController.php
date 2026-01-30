@@ -54,20 +54,13 @@ class SocialAuthController extends Controller
                     ]);
                 }
                 
-                // <--- PERBAIKAN 3: Cek Role untuk user lama
-                // Jika user lama ini belum punya role (misal sisa testing sebelumnya), kasih role.
-                if ($user->roles->isEmpty()) {
-                    $user->assignRole('staff');
-                }
             }
-
-            // Login user
-            Auth::login($user);
 
             if (! $user->is_active) {
-                Auth::logout();
-                return redirect('/login')->withErrors( 'Akun Google Anda dinonaktifkan oleh Admin.');
+                return redirect('/login')->withErrors(['email' => 'Akun Google Anda dinonaktifkan oleh Admin.']);
             }
+
+            Auth::login($user);
 
             if (!$user->is_profile_complete) {
                 return redirect()->route('profile.edit')->with('warning', 'Silakan lengkapi Username dan Password Anda terlebih dahulu.');

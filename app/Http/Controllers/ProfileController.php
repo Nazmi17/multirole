@@ -11,13 +11,35 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
+use PragmaRX\Google2FALaravel\Facade as Google2FA;
 
 class ProfileController extends Controller
 {
-    public function edit(Request $request): View
+   public function edit(Request $request): View
     {
+        $user = $request->user();
+
+        
+        $enabled = !is_null($user->google2fa_secret);
+        $QR_Image = null;
+        $secret = null;
+
+        // Jika belum aktif, kita generate datanya supaya view tidak error
+        if (!$enabled) {
+            $secret = Google2FA::generateSecretKey();
+            
+            $QR_Image = Google2FA::getQRCodeInline(
+                config('app.name'),
+                $user->email,
+                $secret
+            );
+        }
+
         return view('profile.edit', [
             'user' => $request->user(),
+            'enabled' => $enabled,
+            'QR_Image' => $QR_Image,
+            'secret' => $secret,
         ]);
     }
 

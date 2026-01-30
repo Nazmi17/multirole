@@ -25,6 +25,14 @@ class ProfileUpdateRequest extends FormRequest
                 'max:255',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+                'username' => [
+                'required', 
+                'string', 
+                'lowercase',   // <--- Tambah ini
+                'alpha_dash',  // <--- Tambah ini
+                'max:255', 
+                Rule::unique(User::class)->ignore($this->user()->id)
+            ],
             'avatar' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'], 
         ];
     }

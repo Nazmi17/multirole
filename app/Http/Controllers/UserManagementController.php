@@ -6,33 +6,48 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules; // <--- Pastikan ini ada (Class Rules)
-use Spatie\Permission\Models\Role; // <--- Ini untuk Role Spatie
+use Illuminate\Validation\Rules;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate; // <--- WAJIB DITAMBAHKAN
 
 class UserManagementController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-       $query = User::with('roles')->latest();
+        // Ganti $this->authorize dengan Gate::authorize
+        Gate::authorize('viewAny', User::class);
 
-        // FILTER: Jika yang login BUKAN 'admin', sembunyikan user yang punya role 'admin'
+        $query = User::with('roles')->latest();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('username', 'like', "%{$search}%");
+            });
+        }
+
         if (!auth()->user()->hasRole('admin')) {
             $query->whereDoesntHave('roles', function ($q) {
                 $q->where('name', 'admin');
             });
         }
 
-        $users = $query->paginate(10);
+        $users = $query->paginate(10)->withQueryString();
 
         return view('admin.users.index', compact('users'));
     }
 
     public function create()
     {
+        Gate::authorize('create', User::class); // <--- Pakai Gate
+
         if (auth()->user()->hasRole('admin')) {
             $roles = Role::where('name', '!=', 'admin')->get();
         } else {
-            $roles = Role::where('name', 'user')->get();
+            $roles = Role::whereNotIn('name', ['admin', 'Pengelola'])->get();
         }
 
         return view('admin.users.create', compact('roles'));
@@ -40,31 +55,26 @@ class UserManagementController extends Controller
 
     public function store(Request $request)
     {
-        if ($request->role === 'admin') {
-            abort(403, 'Tindakan ilegal: Tidak diizinkan membuat Super Admin baru.');
-        }
-        
-        if (in_array($request->role, ['admin', 'pengelola']) && !auth()->user()->hasRole('admin')) {
-            abort(403, 'Anda hanya diizinkan membuat akun User biasa.');
-        }
+        Gate::authorize('create', User::class); 
 
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'username' => ['required', 'string', 'max:255', 'unique:users', 'alpha_dash'],
-            'password' => [
-                            'required', 
-                            'confirmed', 
-                            \Illuminate\Validation\Rules\Password::min(8)
-                                ->letters()
-                                ->mixedCase()
-                                ->numbers()
-                                ->symbols()
-                          ],
-            'email_verified_at' => now(),
+            'username' => ['required', 'string', 'max:255', 'unique:users', 'alpha_dash', 'lowercase'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'is_active' => ['required', 'boolean'],
-            
-            'role' => ['required', 'exists:roles,name', 'not_in:admin'],
+            'role' => [
+                'required', 
+                'exists:roles,name', 
+                function ($attribute, $value, $fail) {
+                    if ($value === 'admin') {
+                        $fail('Tidak diizinkan membuat Super Admin baru.');
+                    }
+                    if (in_array($value, ['admin', 'pengelola']) && !auth()->user()->hasRole('admin')) {
+                        $fail('Anda hanya diizinkan membuat akun User biasa.');
+                    }
+                },
+            ],
         ]);
 
         $user = User::create([
@@ -83,13 +93,7 @@ class UserManagementController extends Controller
 
     public function edit(User $user)
     {
-        if ($user->hasRole('admin') && !auth()->user()->hasRole('admin')) {
-            abort(403, 'Anda tidak memiliki akses ke user ini.');
-        }
-
-        if ($user->hasRole('Pengelola') && !auth()->user()->hasRole('admin')) {
-            abort(403, 'Anda tidak memiliki akses ke user ini.');
-        }
+        Gate::authorize('update', $user); // <--- Pakai Gate
 
         if (auth()->user()->hasRole('admin')) {
             $roles = Role::where('name', '!=', 'admin')->get();
@@ -102,37 +106,26 @@ class UserManagementController extends Controller
 
     public function update(Request $request, User $user)
     {
-        if ($request->role === 'admin') {
-            abort(403, 'Tindakan ilegal: Tidak diizinkan menaikkan role menjadi Super Admin.');
-        }
-
-        if ($user->hasRole('admin') && !auth()->user()->hasRole('admin')) {
-            abort(403, 'Anda tidak memiliki hak untuk mengedit akun Admin.');
-        }
-
-        if ($user->hasRole('Pengelola') && !auth()->user()->hasRole('admin')) {
-            abort(403, 'Anda tidak memiliki hak untuk mengedit akun Pengelola.');
-        }
-
-        if (in_array($request->role, ['admin', 'pengelola']) && !auth()->user()->hasRole('admin')) {
-            abort(403, 'Anda tidak diizinkan mengubah role menjadi Admin atau Pengelola.');
-        }
+        Gate::authorize('update', $user); // <--- Pakai Gate
 
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
-            'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id), 'alpha_dash'],
-            'role' => ['required', 'exists:roles,name', 'not_in:admin'],            
-            'password' => [
-                'nullable', 
-                'confirmed', 
-                \Illuminate\Validation\Rules\Password::min(8)
-                    ->letters()
-                    ->mixedCase()
-                    ->numbers()
-                    ->symbols()
-            ],
+            'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id), 'alpha_dash', 'lowercase'],
             'is_active' => ['required', 'boolean'],
+            'password' => ['nullable', 'confirmed', Rules\Password::defaults()],
+            'role' => [
+                'required', 
+                'exists:roles,name',
+                function ($attribute, $value, $fail) {
+                    if ($value === 'admin') {
+                        $fail('Tidak diizinkan menjadikan user sebagai Super Admin.');
+                    }
+                    if (in_array($value, ['admin', 'pengelola']) && !auth()->user()->hasRole('admin')) {
+                        $fail('Anda tidak diizinkan mengubah role menjadi Admin atau Pengelola.');
+                    }
+                }
+            ],     
         ]);
 
         $user->update([
@@ -155,12 +148,58 @@ class UserManagementController extends Controller
 
     public function destroy(User $user)
     {
-        if (auth()->id() === $user->id) {
-            return back()->with('error', 'Anda tidak bisa menghapus akun sendiri!');
-        }
+        Gate::authorize('delete', $user); 
 
         $user->delete();
 
+        $user->is_active = false;
+        $user->save();
+
         return back()->with('success', 'User berhasil dihapus.');
+    }
+
+    /**
+     * Menampilkan daftar user yang sudah dihapus (Soft Deleted).
+     */
+    public function trash()
+    {
+        // Gate check (opsional, sesuaikan dengan Policy Anda)
+        // Gate::authorize('viewTrash', User::class);
+
+        // onlyTrashed() hanya mengambil data yang kolom deleted_at-nya terisi
+        $users = User::onlyTrashed()->latest()->paginate(10);
+
+        return view('admin.users.trash', compact('users'));
+    }
+
+    public function restore($id)
+    {
+        // Cari user di tong sampah
+        $user = User::withTrashed()->findOrFail($id);
+
+        // Gate::authorize('restore', $user);
+
+        $user->restore();
+
+        $user->is_active = true;
+        $user->save();
+
+        return back()->with('success', 'User berhasil dipulihkan (Restore).');
+    }
+
+  
+    public function forceDelete($id)
+    {
+        $user = User::withTrashed()->findOrFail($id);
+
+        // Gate::authorize('forceDelete', $user);
+
+        if ($user->avatar) {
+             Storage::disk('public')->delete($user->avatar);
+        }
+
+        $user->forceDelete();
+
+        return back()->with('success', 'User berhasil dihapus permanen.');
     }
 }

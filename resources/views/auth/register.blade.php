@@ -1,35 +1,45 @@
 <x-guest-layout>
     <form method="POST" action="{{ route('register') }}"
         x-data="{ 
+            // 1. Tambahkan username dengan default value dari old input (jika ada error server)
+            username: '{{ old('username') }}',
             password: '', 
             password_confirmation: '',
+            
             requirements: [
-                { regex: /.{8,}/, text: 'Minimal 8 karakter' },
-                { regex: /[A-Z]/, text: 'Harus ada huruf besar' },
-                { regex: /[0-9]/, text: 'Harus ada angka' },
-                { regex: /[^A-Za-z0-9]/, text: 'Harus ada simbol (!@#$%^&*)' }
+                { id: 1, regex: /.{8,}/, text: 'Minimal 8 karakter' },
+                { id: 2, regex: /[A-Z]/, text: 'Harus ada huruf besar' },
+                { id: 3, regex: /[0-9]/, text: 'Harus ada angka' },
+                { id: 4, regex: /[^A-Za-z0-9]/, text: 'Harus ada simbol (!@#$%^&*)' }
             ],
-            get strength() {
-                return this.requirements.filter(req => req.regex.test(this.password)).length;
+
+            // 2. Logic Validasi Username
+            get usernameError() {
+                if (/\s/.test(this.username)) return 'Username tidak boleh mengandung spasi';
+                if (/[A-Z]/.test(this.username)) return 'Username harus huruf kecil semua';
+                return null;
             },
-            get strengthLabel() {
-                if (this.strength <= 1) return 'Lemah';
-                if (this.strength <= 3) return 'Sedang';
-                return 'Kuat';
+
+            get sortedRequirements() {
+                return this.requirements.map(req => {
+                    return { ...req, met: req.regex.test(this.password) };
+                }).sort((a, b) => {
+                    if (a.met && !b.met) return -1;
+                    if (!a.met && b.met) return 1;
+                    return a.id - b.id;
+                });
             },
-            get barColor() {
-                if (this.strength <= 1) return 'bg-red-500';
-                if (this.strength <= 3) return 'bg-yellow-500';
-                return 'bg-green-500';
-            },
+
             get isComplete() {
-                // Wajib diisi dan Valid
-                return this.strength === 4 && this.password === this.password_confirmation;
+                // 3. Tambahkan cek !this.usernameError di sini
+                return this.requirements.every(req => req.regex.test(this.password)) && 
+                       this.password === this.password_confirmation &&
+                       this.username.length > 0 &&
+                       !this.usernameError;
             }
         }">
         @csrf
 
-        <!-- Name -->
         <div>
             <x-input-label for="name" :value="__('Name')" />
             <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
@@ -38,18 +48,28 @@
 
         <div class="mt-4">
             <x-input-label for="username" :value="__('Username')" />
-            <x-text-input id="username" class="block mt-1 w-full" type="text" name="username" :value="old('username')" required />
+            
+            <x-text-input id="username" class="block mt-1 w-full" 
+                type="text" 
+                name="username" 
+                x-model="username"
+                x-on:input="username = username.toLowerCase().replace(/\s/g, '')"
+                required />
+
             <x-input-error :messages="$errors->get('username')" class="mt-2" />
+
+            <p x-show="username.length > 0 && usernameError" 
+               x-text="usernameError"
+               class="text-red-500 text-xs mt-1"
+               x-transition></p>
         </div>
 
-        <!-- Email Address -->
         <div class="mt-4">
             <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
+            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="email" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
-        <!-- Password -->
         <div class="mt-4">
             <x-input-label for="password" :value="__('Password')" />
 
@@ -62,20 +82,12 @@
             <x-input-error :messages="$errors->get('password')" class="mt-2" />
 
             <div class="mt-2" x-show="password.length > 0" x-transition>
-                <div class="flex items-center justify-between mb-1">
-                    <span class="text-xs font-semibold text-gray-700" x-text="strengthLabel"></span>
-                    <span class="text-xs text-gray-500" x-text="(strength / 4 * 100) + '%'"></span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-1.5 mb-3">
-                    <div class="h-1.5 rounded-full transition-all duration-300" 
-                        :class="barColor" 
-                        :style="'width: ' + (strength / 4 * 100) + '%'"></div>
-                </div>
                 <ul class="text-xs space-y-1">
-                    <template x-for="(req, index) in requirements" :key="index">
-                        <li class="flex items-center" 
-                            :class="req.regex.test(password) ? 'text-green-600 font-medium' : 'text-gray-500'">
-                            <span class="mr-2" x-text="req.regex.test(password) ? '✓' : '○'"></span>
+                    <template x-for="req in sortedRequirements" :key="req.id">
+                        <li class="flex items-center transition-all duration-500 ease-in-out transform" 
+                            :class="req.met ? 'text-green-600 font-bold translate-x-1' : 'text-gray-500'">
+                            <span class="mr-2 inline-block w-4 text-center transition-all" 
+                                  x-text="req.met ? '✓' : '○'"></span>
                             <span x-text="req.text"></span>
                         </li>
                     </template>

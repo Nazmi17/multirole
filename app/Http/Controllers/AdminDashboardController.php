@@ -33,16 +33,20 @@ class AdminDashboardController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:roles,name',
+            'permissions' => 'array',
         ]);
 
-        Role::create(['name' => $request->name]);
+        $role = Role::create(['name' => $request->name]);
+
+        if ($request->has('permissions')) {
+            $role->syncPermissions($request->permissions);
+        }
 
         return back()->with('success', 'Role baru berhasil dibuat!');
     }
 
     public function updateRolePermissions(Request $request, Role $role)
     {
-        // Validasi input permissions harus berupa array
         $request->validate([
             'permissions' => 'array',
         ]);

@@ -14,8 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
+            '2fa' => \App\Http\Middleware\TwoFactorMiddleware::class,
         ]);
         $middleware->appendToGroup('web', \App\Http\Middleware\EnsureProfileIsComplete::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\UserActivity::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
