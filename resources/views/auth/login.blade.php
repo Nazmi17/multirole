@@ -5,7 +5,15 @@
 <x-guest-layout>
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login') }}" 
+        x-data="{ 
+            verified: false,
+            init() {
+                // Mendaftarkan fungsi global untuk callback Google reCAPTCHA
+                window.onCaptchaVerified = () => { this.verified = true; };
+                window.onCaptchaExpired = () => { this.verified = false; };
+            }
+        }">
         @csrf
 
         <div>
@@ -34,9 +42,13 @@
         </div>
 
         <div class="mt-4 flex flex-col justify-center"> 
-            <div class="g-recaptcha" data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"></div>
+            <div class="g-recaptcha" 
+                 data-sitekey="{{ env('RECAPTCHA_SITE_KEY') }}"
+                 data-callback="onCaptchaVerified"
+                 data-expired-callback="onCaptchaExpired">
+            </div>
             
-            {{-- Menampilkan Error jika user lupa centang --}}
+            {{-- Menampilkan Error jika user lupa centang (validasi server side) --}}
             <x-input-error :messages="$errors->get('g-recaptcha-response')" class="mt-2" />
         </div>
 
@@ -50,11 +62,13 @@
 
             @if (Route::has('password.request'))
                 <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot password?') }}
+                    {{ __('Lupa Password?') }}
                 </a>
             @endif
 
-            <x-primary-button class="ms-3">
+            <x-primary-button class="ms-3 transition-opacity duration-200"
+                ::disabled="!verified"
+                ::class="!verified ? 'opacity-50 cursor-not-allowed' : ''">
                 {{ __('Log in') }}
             </x-primary-button>
         </div>

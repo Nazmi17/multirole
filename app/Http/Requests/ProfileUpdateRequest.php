@@ -28,8 +28,8 @@ class ProfileUpdateRequest extends FormRequest
                 'username' => [
                 'required', 
                 'string', 
-                'lowercase',   // <--- Tambah ini
-                'alpha_dash',  // <--- Tambah ini
+                'lowercase',  
+                'alpha_dash', 
                 'max:255', 
                 Rule::unique(User::class)->ignore($this->user()->id)
             ],

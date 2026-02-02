@@ -39,7 +39,7 @@ class SocialAuthController extends Controller
                     $provider . '_id'   => $socialUser->getId(),
                     'avatar'            => $socialUser->getAvatar(),
                     'is_active'         => true,
-                    'is_profile_complete' => false,
+                    'is_profile_complete' => true,
                 ]);
 
                 // Assign Role Default (Pastikan nama role 'staff' atau 'user' ada di database)

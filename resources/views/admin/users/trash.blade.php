@@ -75,7 +75,7 @@
                                             </form>
 
                                             {{-- TOMBOL DELETE PERMANENT --}}
-                                            @if($user->role_id == 1)
+                                            @if(auth()->user()->id == 2)
                                             <form action="{{ route('admin.users.force_delete', $user->id) }}" method="POST" onsubmit="return confirm('PERINGATAN: Data ini akan dihapus selamanya dan tidak bisa kembali. Yakin?');">
                                                 @csrf
                                                 @method('DELETE')

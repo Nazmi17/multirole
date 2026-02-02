@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;       // <--- Wajib ada
+use Illuminate\Support\Facades\Mail; // <--- Wajib ada
+use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\SocialAuthController;
@@ -19,7 +22,7 @@ Route::middleware(['auth', '2fa'])->group(function () {
     Route::middleware(['can:Edit profile'])->group(function () {
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])
-        ->middleware(['password.confirm']) 
+        ->middleware(['password.confirm'])
         ->name('profile.update');
 
     Route::delete('/profile', [ProfileController::class, 'destroy'])
@@ -51,7 +54,6 @@ Route::middleware(['auth', 'verified', '2fa'])->group(function () {
 Route::get('auth/{provider}/redirect', [SocialAuthController::class, 'redirect'])->name('social.redirect');
 Route::get('auth/{provider}/callback', [SocialAuthController::class, 'callback']);
 
-// 2. Multi-role Routes
 // Dashboard untuk USER BIASA
 Route::middleware(['auth', 'verified', '2fa'])->group(function () {
      Route::get('/dashboard', function () {
@@ -73,5 +75,34 @@ Route::middleware(['auth', 'verified', '2fa', 'role:admin'])->prefix('admin')->g
     // Action untuk Hapus Role
     Route::delete('/roles/{role}', [AdminDashboardController::class, 'destroyRole'])->name('admin.roles.destroy');
 });
+
+Route::get('/auth/status', function () {
+    $timeout = config('auth.password_timeout', 10800);
+    $confirmedAt = session('auth.password_confirmed_at', 0);
+    
+    return response()->json([
+        'confirmed' => (time() - $confirmedAt) < $timeout
+    ]);
+})->middleware('auth');
+
+// Route untuk mengirim kode OTP ke email
+Route::post('/auth/send-email-otp', function (Request $request) {
+    $user = $request->user();
+    
+    // Generate 6 angka acak
+    $code = rand(100000, 999999);
+    
+    // Simpan di session selama 5 menit
+    Session::put('auth_verification_code', $code);
+    Session::put('auth_verification_code_expires_at', now()->addMinutes(5));
+    
+    // Kirim Email (Simple)
+    Mail::raw("Kode verifikasi keamanan Anda adalah: $code. Kode ini berlaku selama 5 menit.", function ($message) use ($user) {
+        $message->to($user->email)
+                ->subject('Kode Verifikasi Keamanan');
+    });
+    
+    return response()->json(['message' => 'Kode terkirim ke email Anda.']);
+})->middleware('auth');
 
 require __DIR__.'/auth.php';
