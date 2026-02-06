@@ -16,7 +16,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        return view('auth.login'); 
     }
 
     /**
@@ -48,7 +48,7 @@ class AuthenticatedSessionController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
-
+        
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
@@ -75,7 +75,6 @@ class AuthenticatedSessionController extends Controller
 
 // restack editor buat artikel
 
-//username ga boleh ada spasi (beres)
-//saat ganti username password email, harus ada verifikasi email
-//tambah kolom alamat dan no hp
+//validasi username ga boleh ada spasi dan huruf besar (beres)
+//saat ganti username password email, harus ada verifikasi email (beres)
 //admin lain tidak boleh edit admin lain (beres)

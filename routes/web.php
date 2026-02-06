@@ -1,14 +1,18 @@
 <?php
 
+use App\Http\Controllers\AlbumController;
+use App\Http\Controllers\GalleryController;
+use App\Mail\SecurityCodeMail;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;       // <--- Wajib ada
-use Illuminate\Support\Facades\Mail; // <--- Wajib ada
 use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\UserManagementController;
+use Illuminate\Http\Request;       // <--- Wajib ada
+use Illuminate\Support\Facades\Mail; // <--- Wajib ada
 
 Route::get('/', function () {
     return view('welcome');
@@ -50,6 +54,13 @@ Route::middleware(['auth', 'verified', '2fa'])->group(function () {
     Route::put('/users/{id}/restore', [UserManagementController::class, 'restore'])->name('admin.users.restore');
     Route::delete('/users/{id}/force-delete', [UserManagementController::class, 'forceDelete'])->name('admin.users.force_delete');
 
+    // Management Category
+    Route::resource('categories', CategoryController::class);
+
+    Route::resource('albums', AlbumController::class);
+
+    Route::resource('galleries', GalleryController::class);
+
 });
 Route::get('auth/{provider}/redirect', [SocialAuthController::class, 'redirect'])->name('social.redirect');
 Route::get('auth/{provider}/callback', [SocialAuthController::class, 'callback']);
@@ -86,23 +97,19 @@ Route::get('/auth/status', function () {
 })->middleware('auth');
 
 // Route untuk mengirim kode OTP ke email
-Route::post('/auth/send-email-otp', function (Request $request) {
-    $user = $request->user();
-    
-    // Generate 6 angka acak
-    $code = rand(100000, 999999);
-    
-    // Simpan di session selama 5 menit
-    Session::put('auth_verification_code', $code);
-    Session::put('auth_verification_code_expires_at', now()->addMinutes(5));
-    
-    // Kirim Email (Simple)
-    Mail::raw("Kode verifikasi keamanan Anda adalah: $code. Kode ini berlaku selama 5 menit.", function ($message) use ($user) {
-        $message->to($user->email)
-                ->subject('Kode Verifikasi Keamanan');
-    });
-    
-    return response()->json(['message' => 'Kode terkirim ke email Anda.']);
-})->middleware('auth');
+    Route::post('/auth/send-email-otp', function (Request $request) {
+        $user = $request->user();
+        
+        // Generate 6 angka acak
+        $code = rand(100000, 999999);
+        
+        // Simpan di session selama 5 menit
+        Session::put('auth_verification_code', $code);
+        Session::put('auth_verification_code_expires_at', now()->addMinutes(5));
+        
+        Mail::to($user)->send(new SecurityCodeMail($code));
+        
+        return response()->json(['message' => 'Kode terkirim ke email Anda.']);
+    })->middleware('auth');
 
 require __DIR__.'/auth.php';

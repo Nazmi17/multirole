@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Gate; // <--- WAJIB DITAMBAHKAN
+use Illuminate\Support\Facades\Gate; 
 
 class UserManagementController extends Controller
 {

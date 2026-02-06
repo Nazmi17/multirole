@@ -11,6 +11,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
+use App\Mail\ProfileUpdatedAlert;
+use Illuminate\Support\Facades\Mail;
 use PragmaRX\Google2FALaravel\Facade as Google2FA;
 
 class ProfileController extends Controller
@@ -86,12 +88,24 @@ class ProfileController extends Controller
             $user->avatar = $path;
         }
 
-        // 4. Reset verifikasi email jika email berubah
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
+        // Jika user mengganti emailnya...
+        if ($request->user()->isDirty('email')) {
+            // 1. Set status verifikasi jadi NULL (Belum Verifikasi)
+            $request->user()->email_verified_at = null;
+            
+            // 2. Kirim ulang email verifikasi ke alamat BARU
+            // (Pastikan queue worker jalan jika pakai queue, kalau tidak, ini kirim langsung)
+            $request->user()->sendEmailVerificationNotification();
         }
 
         $user->save();
+
+        try {
+            Mail::to($user)->send(new ProfileUpdatedAlert());
+        } catch (\Exception $e) {
+            // Opsional: Log error jika email gagal, tapi jangan batalkan proses update profil
+            \Illuminate\Support\Facades\Log::error('Gagal kirim notifikasi update profil: ' . $e->getMessage());
+        }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }

@@ -9,22 +9,22 @@ use App\Models\User;
 
 class AdminDashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Ambil semua Role beserta permission yang dimilikinya
-        $roles = Role::with('permissions')->get();
+        $query = Role::with('permissions')->latest();
+        $query->where('name', '!=', 'admin');
+
+        if ($request->has('search' && $request->search == '')) {
+            $query->where('name', 'like', "%" . $request->search . "%");
+        }
+
+        $roles = $query->paginate(4)->withQueryString();
+
+        $roles = Role::with('permissions')->paginate(4)->withQueryString();
         
-        // Ambil semua Permission yang tersedia di database
         $permissions = Permission::all()->sortBy('name');
         
-        // Hitung total user (opsional, untuk statistik)
         $totalUsers = User::count();
-
-        if (auth()->user()->hasRole('admin')) {
-        $roles = Role::all();
-        } else {
-            $roles = Role::where('name', '!=', 'admin')->get();
-        }
 
         return view('admin.dashboard', compact('roles', 'permissions', 'totalUsers'));
     }
