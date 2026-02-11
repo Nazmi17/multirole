@@ -39,14 +39,33 @@
 
             <div class="hidden lg:flex items-center gap-4">
                 {{-- TODO: replace with Laravel backend logic for search. --}}
-                <div class="relative">
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                        class="font-paragraph pl-10 pr-4 py-2 rounded-xl border-2 border-neutral-gray focus:border-secondary focus:outline-none transition duration-300 w-64"
-                    />
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground/40">🔍</span>
-                </div>
+                 @if (Route::has('login'))
+                    <nav class="flex items-center justify-end gap-4">
+                        @auth
+                            <a
+                                href="{{ url('/dashboard') }}"
+                                class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal"
+                            >
+                                Dashboard
+                            </a>
+                        @else
+                            <a
+                                href="{{ route('login') }}"
+                                class="inline-block px-5 py-1.5 dark:text-black  border-[#19140035] text-black border hover:border-[#19140035] dark:hover:border-[#3E3E3A] rounded-sm text-sm leading-normal"
+                            >
+                                Log in
+                            </a>
+
+                            @if (Route::has('register'))
+                                <a
+                                    href="{{ route('register') }}"
+                                    class="inline-block px-5 py-1.5 dark:text-black border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
+                                    Register
+                                </a>
+                            @endif
+                        @endauth
+                    </nav>
+                @endif
             </div>
 
             <button

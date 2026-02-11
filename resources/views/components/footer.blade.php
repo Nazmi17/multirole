@@ -25,11 +25,11 @@
                     </div>
                     <div>
                         <h3 class="font-heading text-xl font-bold">Nazmi Restaurant</h3>
-                        <p class="font-paragraph text-sm text-white/70">Sundanese Cuisine</p>
+                        <p class="font-paragraph text-sm text-white/70">Masakan Sunda</p>
                     </div>
                 </div>
                 <p class="font-paragraph text-white/80 leading-relaxed mb-6">
-                    Celebrating the rich traditions of Sundanese culinary heritage with authentic flavors and warm hospitality.
+                    Merayakan kekayaan tradisi kuliner Sunda dengan rasa yang autentik dan hospitalitas yang hangat.
                 </p>
                 <div class="flex gap-4">
                     @foreach ($socialLinks as $social)
@@ -45,7 +45,7 @@
             </div>
 
             <div>
-                <h4 class="font-heading text-lg font-bold mb-6">Quick Links</h4>
+                <h4 class="font-heading text-lg font-bold mb-6">Link Cepat</h4>
                 <ul class="space-y-3">
                     @foreach ($navigationLinks as $link)
                         <li>
@@ -61,13 +61,13 @@
             </div>
 
             <div>
-                <h4 class="font-heading text-lg font-bold mb-6">Contact Us</h4>
+                <h4 class="font-heading text-lg font-bold mb-6">Hubungi Kami</h4>
                 <ul class="space-y-4">
                     <li class="flex items-start gap-3">
                         <span class="w-5 h-5 text-secondary mt-1 flex-shrink-0">📍</span>
                         <span class="font-paragraph text-white/80">
                             Jl. Sundanese Heritage No. 123<br />
-                            Bandung, West Java, Indonesia
+                            Bandung, Jawa Barat, Indonesia
                         </span>
                     </li>
                     <li class="flex items-center gap-3">
@@ -86,18 +86,18 @@
             </div>
 
             <div>
-                <h4 class="font-heading text-lg font-bold mb-6">Opening Hours</h4>
+                <h4 class="font-heading text-lg font-bold mb-6">Jam Operasional</h4>
                 <ul class="space-y-3 font-paragraph text-white/80">
                     <li class="flex justify-between">
-                        <span>Monday - Friday</span>
+                        <span>Senin - Jumat</span>
                         <span class="font-bold">10:00 - 22:00</span>
                     </li>
                     <li class="flex justify-between">
-                        <span>Saturday</span>
+                        <span>Sabtu</span>
                         <span class="font-bold">09:00 - 23:00</span>
                     </li>
                     <li class="flex justify-between">
-                        <span>Sunday</span>
+                        <span>Minggu</span>
                         <span class="font-bold">09:00 - 22:00</span>
                     </li>
                 </ul>
@@ -107,14 +107,15 @@
         <div class="border-t border-white/20 pt-8">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                 <p class="font-paragraph text-white/70 text-sm text-center md:text-left">
-                    © 2026 Nazmi Restaurant. All rights reserved.
+                    © 2026 Nazmi Restaurant. Hak cipta dilindungi.
                 </p>
                 <div class="bg-accent-muted-red/20 border border-accent-muted-red/40 rounded-xl px-6 py-3">
                     <p class="font-paragraph text-white/90 text-sm font-bold text-center">
-                        📚 This website is a school project
+                        📚 Website ini adalah proyek sekolah
                     </p>
                 </div>
             </div>
         </div>
     </div>
 </footer>
+

@@ -14,26 +14,34 @@ use App\Http\Controllers\UserManagementController;
 use Illuminate\Http\Request;       // <--- Wajib ada
 use Illuminate\Support\Facades\Mail; // <--- Wajib ada
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+
+Route::view('/', 'pages.home')->name('home');
+Route::view('/catalog', 'pages.catalog')->name('catalog');
+Route::view('/gallery', 'pages.gallery')->name('gallery');
+Route::view('/articles', 'pages.articles')->name('articles');
+Route::view('/map', 'pages.map')->name('map');
+Route::view('/profile', 'pages.profile')->name('profile');
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware(['auth', '2fa'])->group(function () {
-    Route::middleware(['can:Edit profile'])->group(function () {
-        Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile', [ProfileController::class, 'update'])
-        ->middleware(['password.confirm'])
-        ->name('profile.update');
+// Route::middleware(['auth', '2fa'])->group(function () {
+//     Route::middleware(['can:Edit profile'])->group(function () {
+//         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+//         Route::patch('/profile', [ProfileController::class, 'update'])
+//         ->middleware(['password.confirm'])
+//         ->name('profile.update');
 
-    Route::delete('/profile', [ProfileController::class, 'destroy'])
-        ->middleware(['password.confirm'])
-        ->name('profile.destroy');
-    });
-});
+//     Route::delete('/profile', [ProfileController::class, 'destroy'])
+//         ->middleware(['password.confirm'])
+//         ->name('profile.destroy');
+//     });
+// });
 Route::middleware(['auth', 'verified', '2fa'])->group(function () {
      Route::get('/profile/2fa', [TwoFactorController::class, 'index'])->name('2fa.index');
     Route::post('/profile/2fa', [TwoFactorController::class, 'store'])->name('2fa.store');
