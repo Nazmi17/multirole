@@ -1,36 +1,45 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Session;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\SecurityCodeMail;
+use App\Http\Controllers\Admin\EbookController;
+use App\Http\Controllers\AdminArticleController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AlbumController;
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\TwoFactorController;
-use App\Http\Controllers\SocialAuthController;
-use App\Http\Controllers\AdminArticleController;
 use App\Http\Controllers\PublicArticleController;
-use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\PublicEbookController;
+use App\Http\Controllers\PublicGalleryAlbumController;
+use App\Http\Controllers\SocialAuthController;
+use App\Http\Controllers\TwoFactorController;
 use App\Http\Controllers\UserManagementController;
+use App\Mail\SecurityCodeMail;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Session;
 
 // --- PUBLIC ROUTES ---
 Route::view('/', 'pages.home')->name('home');
 Route::view('/catalog', 'pages.catalog')->name('catalog');
-Route::view('/gallery', 'pages.gallery')->name('gallery');
+// Route::view('/gallery', 'pages.gallery')->name('gallery');
 Route::view('/map', 'pages.map')->name('map');
 
 // Saya ganti nama route ini jadi 'team' agar tidak bentrok dengan user profile
 Route::view('/team', 'pages.profile')->name('team'); 
+
+Route::get('/gallery', [PublicGalleryAlbumController::class, 'gallery'])->name('public.gallery.index');
+Route::get('/gallery/{album:slug}', [PublicGalleryAlbumController::class, 'showAlbum'])->name('public.gallery.show');
 
 // Artikel Publik
 Route::get('/articles', [PublicArticleController::class, 'index'])->name('public.articles.index');
 Route::get('/articles/{article:slug}', [PublicArticleController::class, 'show'])->name('public.articles.show');
 Route::get('/author/{user}', [PublicArticleController::class, 'author'])->name('public.author');
 
+Route::get('/ebooks-page', [PublicEbookController::class, 'index'])->name('public.ebooks.index');
+Route::get('/ebooks/download/{ebook}', [PublicEbookController::class, 'download'])->name('ebooks.download');
+Route::get('/ebooks/read/{ebook}', [PublicEbookController::class, 'stream'])->name('ebooks.stream');
 
 // --- AUTH & DASHBOARD ROUTES ---
 Route::middleware(['auth', 'verified', '2fa'])->group(function () {
@@ -66,11 +75,16 @@ Route::middleware(['auth', 'verified', '2fa'])->group(function () {
     Route::resource('albums', AlbumController::class);
     Route::resource('galleries', GalleryController::class);
 
+    Route::delete('/albums/{album}/gallery/{gallery}', [AlbumController::class, 'removeGallery'])->name('albums.remove_gallery');
+
     // --- 2FA SETTINGS ---
     Route::get('/profile/2fa', [TwoFactorController::class, 'index'])->name('2fa.index');
     Route::post('/profile/2fa', [TwoFactorController::class, 'store'])->name('2fa.store');
     Route::delete('/profile/2fa', [TwoFactorController::class, 'destroy'])->name('2fa.destroy');
 
+    Route::get('/trash', [ArticleController::class, 'trash'])->name('articles.trash');
+    Route::put('/{id}/restore', [ArticleController::class, 'restore'])->name('articles.restore');
+    Route::delete('/{id}/force-delete', [ArticleController::class, 'forceDelete'])->name('articles.force_delete');
     // --- ARTIKEL USER (Penulis) ---
     Route::prefix('my-articles')->name('articles.')->group(function () {
         Route::get('/', [ArticleController::class, 'index'])->name('index');
@@ -92,9 +106,10 @@ Route::middleware(['auth', 'verified', '2fa'])->group(function () {
     });
 
     Route::post('/articles/{article}/comment', [PublicArticleController::class, 'storeComment'])->name('articles.comment.store');
-    
-    // Route Hapus Komentar (Opsional)
     Route::delete('/comments/{comment}', [PublicArticleController::class, 'destroyComment'])->name('articles.comment.destroy');
+
+    Route::resource('ebooks', EbookController::class);
+        Route::get('ebooks/{ebook}/history', [EbookController::class, 'history'])->name('ebooks.history');
 });
 
 // --- PROFILE EDIT (BREEZE) ---

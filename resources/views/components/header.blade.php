@@ -2,7 +2,8 @@
     $navItems = [
         ['name' => 'Home', 'route' => 'home'],
         ['name' => 'Catalog', 'route' => 'catalog'],
-        ['name' => 'Gallery', 'route' => 'gallery'],
+        ['name' => 'Gallery', 'route' => 'public.gallery.index'],
+        ['name' => 'E-Books', 'route' => 'public.ebooks.index'],
         ['name' => 'Articles', 'route' => 'public.articles.index'],
         ['name' => 'Map', 'route' => 'map'],
         ['name' => 'Team', 'route' => 'team'],

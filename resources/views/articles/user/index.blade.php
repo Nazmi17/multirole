@@ -29,9 +29,15 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 
                 <div class="p-6 text-gray-900">
-                    <a href="{{ route('articles.create') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
-                {{ __('Write New Article') }}
-            </a>
+                    <div class="flex gap-3">
+                        <a href="{{ route('articles.create') }}" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                            {{ __('Write New Article') }}
+                        </a>
+                        
+                        <a href="{{ route('articles.trash') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                            🗑️ Trash
+                        </a>
+                    </div>
                     <div class="py-1"></div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">

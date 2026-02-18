@@ -71,6 +71,12 @@
                 {{ __('Album Management') }}
         </x-nav-link>
 
+        @can('view ebooks')
+            <x-nav-link :href="route('ebooks.index')" :active="request()->routeIs('ebooks.*')" class="block w-full text-left pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('ebooks.*') ? 'border-indigo-400 text-indigo-700 bg-indigo-50' : 'border-transparent text-gray-600 hover:bg-gray-50' }} text-base font-medium transition">
+                {{ __('Ebook Management') }}
+        </x-nav-link>
+        @endcan
+
         <div class="mt-auto">
             <x-nav-link :href="route('home')" :active="request()->routeIs('home')" class="block w-full text-left pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('home') ? 'border-indigo-400 text-indigo-700 bg-indigo-50' : 'border-transparent text-gray-600 hover:bg-gray-50' }} text-base font-medium transition">
                 <strong>{{ __('Kembali ke Beranda') }}</strong>

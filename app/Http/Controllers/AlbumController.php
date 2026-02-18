@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Album;
 use App\Models\Category;
+use App\Models\Gallery;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,10 +24,21 @@ class AlbumController extends Controller
         return view('album.index', compact('albums'));
     }
 
+    public function show(Album $album)
+    {
+        // Eager load: ambil relasi galleries beserta kategorinya, dan user pembuatnya
+        $album->load(['galleries.categories', 'user']);
+        
+        return view('album.show', compact('album'));
+    }
+
     public function create()
     {
-        $categories = Category::all();
-        return view('album.create', compact('categories'));
+        $galleries = Gallery::where('user_id', Auth::id())
+                            ->whereNull('album_id')
+                            ->latest()
+                            ->get();
+        return view('album.create', compact('galleries'));
     }
 
     public function store(Request $request)
@@ -34,6 +46,8 @@ class AlbumController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'cover_image' => 'required|image|mimes:jpeg,png,jpg|max:5048',
+            'gallery_ids' => 'nullable|array',
+            'gallery_ids.*' => 'exists:galleries,id',
         ]);
 
         $data = [
@@ -48,14 +62,23 @@ class AlbumController extends Controller
             $data['cover_image'] = $imagePath;
         }
 
-        Album::create($data);
+        $album = Album::create($data);
+
+        if ($request->has('gallery_ids')) {
+            Gallery::whereIn('id', $request->gallery_ids)->update(['album_id' => $album->id]);
+        }
+
         return redirect()->route('albums.index')->with('success', 'Album berhasil dibuat!');
     }
 
     public function edit(Album $album)
     {
-        $categories = Category::all();
-        return view('album.edit', compact('album', 'categories'));
+        $availableGalleries = Gallery::where('user_id', Auth::id())
+                                     ->whereNull('album_id')
+                                     ->latest()
+                                     ->get();
+
+        return view('album.edit', compact('album', 'availableGalleries'));
     }
 
     public function update(Request $request, Album $album)
@@ -63,6 +86,8 @@ class AlbumController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'cover_image' => 'image|mimes:jpeg,png,jpg|max:5048',
+            'gallery_ids' => 'nullable|array',
+            'gallery_ids.*' => 'exists:galleries,id',
         ]);
 
         $data = [
@@ -82,6 +107,10 @@ class AlbumController extends Controller
 
         $album->update($data);
 
+        if ($request->has('gallery_ids')) {
+            Gallery::whereIn('id', $request->gallery_ids)->update(['album_id' => $album->id]);
+        }
+
         return redirect()->route('albums.index')->with('success', 'Album berhasil diupdate!');
     }
 
@@ -91,7 +120,19 @@ class AlbumController extends Controller
             Storage::disk('public')->delete($album->cover_image);
         }
 
+        $album->galleries()->update(['album_id' => null]);
+
         $album->delete();
         return redirect()->route('album.index')->with('success', 'Album berhasil dihapus!');
+    }
+
+    public function removeGallery($album_id, $gallery_id)
+    {
+        $gallery = Gallery::where('id', $gallery_id)->where('album_id', $album_id)->firstOrFail();
+        
+        // Set album_id jadi null (keluarkan dari album, TAPI file tetap ada di galeri)
+        $gallery->update(['album_id' => null]);
+
+        return back()->with('success', 'Foto berhasil dikeluarkan dari album.');
     }
 }

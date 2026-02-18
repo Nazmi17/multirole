@@ -138,26 +138,69 @@ class ArticleController extends Controller
     }
 
     public function uploadContentImage(Request $request)
-{
-    // Validasi sederhana
-    if ($request->hasFile('upload')) {
-        $file = $request->file('upload');
-        
-        // Simpan file
-        $path = $file->store('articles/content', 'public');
-        $url = asset('storage/' . $path); // Gunakan asset() agar URL lengkap (http://...)
+    {
+        // Validasi sederhana
+        if ($request->hasFile('upload')) {
+            $file = $request->file('upload');
+            
+            // Simpan file
+            $path = $file->store('articles/content', 'public');
+            $url = asset('storage/' . $path); // Gunakan asset() agar URL lengkap (http://...)
 
-        // FORMAT RESPON WAJIB UNTUK CKEDITOR 5
+            // FORMAT RESPON WAJIB UNTUK CKEDITOR 5
+            return response()->json([
+                'uploaded' => 1, 
+                'fileName' => $file->getClientOriginalName(),
+                'url' => $url
+            ]);
+        }
+
         return response()->json([
-            'uploaded' => 1, 
-            'fileName' => $file->getClientOriginalName(),
-            'url' => $url
+            'uploaded' => 0, 
+            'error' => ['message' => 'File tidak terkirim.']
         ]);
     }
 
-    return response()->json([
-        'uploaded' => 0, 
-        'error' => ['message' => 'File tidak terkirim.']
-    ]);
-}
+    public function trash()
+    {
+        $articles = Article::onlyTrashed()
+            ->where('user_id', Auth::id()) // Pastikan hanya punya user sendiri
+            ->with('categories')
+            ->latest('deleted_at')
+            ->paginate(10);
+
+        return view('articles.user.trash', compact('articles'));
+    }
+
+    // 2. Mengembalikan Artikel (Restore)
+    public function restore($id)
+    {
+        $article = Article::onlyTrashed()
+            ->where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $article->restore();
+
+        return redirect()->route('articles.trash')->with('success', 'Artikel berhasil dipulihkan (Restore).');
+    }
+
+    // 3. Menghapus Permanen (Force Delete)
+    public function forceDelete($id)
+    {
+        $article = Article::onlyTrashed()
+            ->where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        // Hapus gambar cover fisik jika ada
+        if ($article->featured_image) {
+            Storage::disk('public')->delete($article->featured_image);
+        }
+
+        // Hapus permanen dari database
+        $article->forceDelete();
+
+        return redirect()->route('articles.trash')->with('success', 'Artikel dihapus permanen.');
+    }
 }
