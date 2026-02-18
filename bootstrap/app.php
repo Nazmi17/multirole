@@ -18,6 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->appendToGroup('web', \App\Http\Middleware\EnsureProfileIsComplete::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\UserActivity::class);
+        $middleware->validateCsrfTokens(except: [
+            'articles/upload-image', // Sesuaikan dengan URL route kamu
+            'admin/articles/upload-image',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

@@ -12,4 +12,10 @@ class Category extends Model
     {
         return $this->belongsToMany(Gallery::class, 'category_gallery');
     }
+
+    // Relasi: Kategori memiliki banyak Artikel
+    public function articles()
+    {
+        return $this->belongsToMany(Article::class, 'article_category');
+    }
 }

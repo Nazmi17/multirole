@@ -69,4 +69,9 @@ class AdminDashboardController extends Controller
 
         return back()->with('success', 'Role berhasil dihapus.');
     }
+
+    public function backToDashboard()
+    {
+        return redirect()->route('dashboard');
+    }
 }

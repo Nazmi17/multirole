@@ -19,8 +19,8 @@
         $features = [
             [
                 'icon' => '🔍',
-                'title' => 'Search System',
-                'description' => 'Find your favorite Sundanese dishes quickly with our intuitive search feature',
+                'title' => 'Login',
+                'description' => 'Login to access our exclusive member-only features and exclusive offers',
             ],
             [
                 'icon' => '🍽️',
@@ -74,6 +74,7 @@
         <div class="fixed top-0 left-0 right-0 h-2 bg-secondary origin-left z-50"></div>
 
         <main class="relative w-full">
+            {{-- HERO SECTION --}}
             <section class="relative min-h-[100vh] flex items-center justify-center pt-20 overflow-hidden">
                 <div class="absolute inset-0 pointer-events-none">
                     <div class="absolute top-0 right-0 w-2/3 h-full bg-white/40 rounded-l-[100px] transform translate-x-1/4 skew-x-[-10deg]"></div>
@@ -107,33 +108,17 @@
 
                             <div class="flex flex-wrap gap-4">
                                 <a
-                                    href="{{ route('catalog') }}"
-                                    class="group relative px-8 py-4 bg-secondary text-white rounded-2xl font-bold text-lg overflow-hidden shadow-lg shadow-secondary/30 hover:shadow-xl hover:shadow-secondary/40 transition-all duration-300 hover:-translate-y-1"
+                                    href="{{ route('public.articles.index') }}"
+                                    class="group px-8 py-4 bg-white text-foreground border-2 border-transparent hover:border-secondary/30 rounded-2xl font-bold text-lg shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-2"
                                 >
-                                    <span class="relative z-10 flex items-center gap-2">
-                                        Explore Menu <span class="w-5 h-5">🍽️</span>
-                                    </span>
-                                    <div class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+                                    View Gallery <span class="w-5 h-5 group-hover:translate-x-1 transition-transform">📰</span>
                                 </a>
-
                                 <a
                                     href="{{ route('gallery') }}"
                                     class="group px-8 py-4 bg-white text-foreground border-2 border-transparent hover:border-secondary/30 rounded-2xl font-bold text-lg shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-2"
                                 >
-                                    View Gallery <span class="w-5 h-5 group-hover:translate-x-1 transition-transform">➡️</span>
+                                    View Gallery <span class="w-5 h-5 group-hover:translate-x-1 transition-transform">🖼️</span>
                                 </a>
-                            </div>
-
-                            <div class="flex items-center gap-8 mt-8 pt-8 border-t border-foreground/5">
-                                <div>
-                                    <p class="font-heading text-3xl font-bold text-foreground">100%</p>
-                                    <p class="text-sm text-foreground/60">Authentic Recipes</p>
-                                </div>
-                                <div class="w-px h-10 bg-foreground/10"></div>
-                                <div>
-                                    <p class="font-heading text-3xl font-bold text-foreground">4.9</p>
-                                    <p class="text-sm text-foreground/60">Customer Rating</p>
-                                </div>
                             </div>
                         </div>
 
@@ -159,7 +144,7 @@
                                     </div>
                                     <p class="text-xs text-foreground/70">Hand-picked ingredients from local farmers.</p>
                                 </div>
-
+{{-- 
                                 <div class="absolute bottom-20 -left-4 md:-left-10 bg-white p-4 rounded-2xl shadow-xl z-20 flex items-center gap-3">
                                     <div class="bg-secondary/20 p-3 rounded-full">
                                         <span class="w-6 h-6 text-secondary">🌿</span>
@@ -168,18 +153,19 @@
                                         <p class="font-bold text-foreground">Fresh & Local</p>
                                         <p class="text-xs text-foreground/60">Daily sourced</p>
                                     </div>
-                                </div>
+                                </div> --}}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-foreground/40">
+                {{-- <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-foreground/40">
                     <span class="text-xs uppercase tracking-widest">Scroll</span>
                     <div class="w-px h-12 bg-gradient-to-b from-foreground/40 to-transparent"></div>
-                </div>
+                </div> --}}
             </section>
 
+            {{-- ABOUT SECTION --}}
             <section class="relative bg-white" id="about">
                 <x-section-divider />
                 <div class="w-full max-w-[120rem] mx-auto px-6 md:px-12 py-24 md:py-32">
@@ -226,7 +212,7 @@
 
                                 <div class="pt-4">
                                     <a
-                                        href="{{ route('profile') }}"
+                                        href="{{ route('team') }}"
                                         class="inline-flex items-center gap-3 text-foreground font-bold text-xl hover:text-secondary transition-colors group"
                                     >
                                         Meet Our Team
@@ -241,6 +227,7 @@
                 </div>
             </section>
 
+            {{-- FEATURES SECTION --}}
             <section class="relative py-32 bg-primary overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
                     <div class="absolute top-1/4 -right-64 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-3xl"></div>
@@ -285,96 +272,12 @@
                 </div>
             </section>
 
-            <section class="relative py-32 bg-foreground text-primary overflow-hidden">
-                <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]"></div>
-
-                <div class="w-full max-w-[120rem] mx-auto px-6 md:px-12 relative z-10">
-                    <div class="flex flex-col md:flex-row justify-between items-end mb-20 gap-8">
-                        <div>
-                            <h2 class="font-heading text-5xl md:text-7xl text-white mb-4">Visual Feast</h2>
-                            <p class="text-white/60 text-xl max-w-md">A curated collection of our finest presentations and culinary moments.</p>
-                        </div>
-                        <a
-                            href="{{ route('gallery') }}"
-                            class="px-8 py-4 rounded-full border border-white/20 text-white hover:bg-white hover:text-foreground transition-all duration-300 font-bold"
-                        >
-                            View Full Gallery
-                        </a>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 h-[800px] overflow-hidden rounded-[3rem] relative">
-                        @foreach ([$columnOne, $columnTwo, $columnThree] as $column)
-                            <div class="flex flex-col gap-8">
-                                @foreach ($column as $img)
-                                    <div class="relative group rounded-[2rem] overflow-hidden h-[400px] w-full shadow-lg">
-                                        <img
-                                            src="https://static.wixstatic.com/media/dea205_d4f95bc391b74128a8247aee88d50d25~mv2.png?originWidth=576&originHeight=384"
-                                            alt="{{ $img['alt'] }}"
-                                            class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                        />
-                                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-6">
-                                            <p class="text-white text-center font-heading text-xl font-bold translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                                                {{ $img['alt'] }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                @endforeach
-                                <div class="h-[200px] w-full bg-white/5 rounded-[2rem] flex items-center justify-center border border-white/10">
-                                    <span class="text-white/20 font-heading text-4xl">+</span>
-                                </div>
-                            </div>
-                        @endforeach
-                        <div class="absolute inset-0 pointer-events-none bg-gradient-to-t from-foreground via-transparent to-foreground opacity-20"></div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="py-24 bg-white border-b border-primary">
-                <div class="w-full max-w-[120rem] mx-auto px-6 md:px-12">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                        @foreach ($benefits as $benefit)
-                            <div class="flex flex-col items-center text-center gap-4 p-6 rounded-3xl hover:bg-primary/50 transition-colors duration-300">
-                                <div class="w-16 h-16 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
-                                    <span class="text-2xl">{{ $benefit['icon'] }}</span>
-                                </div>
-                                <span class="font-heading font-bold text-lg text-foreground">{{ $benefit['text'] }}</span>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </section>
-
-            <section class="relative py-32 md:py-48 overflow-hidden">
-                <div class="absolute inset-0 bg-secondary">
-                    <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/food.png')] mix-blend-overlay"></div>
-                    <div class="absolute top-0 right-0 w-[800px] h-[800px] bg-white/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
-                    <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-accent-muted-red/20 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
-                </div>
-
-                <div class="w-full max-w-[100rem] mx-auto px-6 md:px-12 relative z-10 text-center">
-                    <h2 class="font-heading text-5xl md:text-7xl lg:text-8xl text-white mb-8 leading-none">
-                        Ready to Taste?
-                    </h2>
-                    <p class="font-paragraph text-xl md:text-2xl text-white/90 max-w-2xl mx-auto mb-12 leading-relaxed">
-                        Dive into our comprehensive showcase of Sundanese culinary traditions. The table is set, and the flavors are waiting.
-                    </p>
-
-                    <div class="flex flex-col sm:flex-row items-center justify-center gap-6">
-                        <a
-                            href="{{ route('catalog') }}"
-                            class="w-full sm:w-auto px-10 py-5 bg-white text-secondary font-bold text-xl rounded-2xl shadow-2xl hover:shadow-white/20 hover:scale-105 transition-all duration-300"
-                        >
-                            Start Exploring
-                        </a>
-                        <a
-                            href="{{ route('profile') }}"
-                            class="w-full sm:w-auto px-10 py-5 bg-transparent border-2 border-white text-white font-bold text-xl rounded-2xl hover:bg-white/10 transition-all duration-300"
-                        >
-                            About The Project
-                        </a>
-                    </div>
-                </div>
-            </section>
+            {{-- 
+                VISUAL FEAST SECTION (FIXED)
+                PERBAIKAN: Mengganti bg-foreground menjadi bg-neutral-900.
+                Ini adalah section gelap, jadi kita harus memastikan backgroundnya gelap agar teks putih terbaca.
+            --}}
+            
         </main>
     </div>
 @endsection

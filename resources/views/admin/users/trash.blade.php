@@ -66,7 +66,7 @@
                                         <div class="flex justify-end gap-3">
                                             
                                             {{-- TOMBOL RESTORE --}}
-                                            <form action="{{ route('admin.users.restore', $user->id) }}" method="POST">
+                                            <form action="{{ route('admin.users.restore', $user->id) }}" method="POST" onclick="return confirm('Apakah anda yakin? Data ini akan dipulihkan.')">
                                                 @csrf
                                                 @method('PUT')
                                                 <button type="submit" class="text-green-600 hover:text-green-900 font-bold">

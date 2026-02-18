@@ -9,6 +9,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
+    @yield('meta')
 </head>
 <body class="h-full bg-primary text-foreground font-paragraph antialiased">
     <div class="min-h-screen">
