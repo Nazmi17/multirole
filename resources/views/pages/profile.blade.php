@@ -3,34 +3,34 @@
 @section('content')
     @php
         $teamMembers = [
-            [
-                'name' => 'Chef Lina',
-                'role' => 'Head Chef',
-                'specialty' => 'Traditional Sundanese Cuisine',
-                'bio' => 'Passionate about preserving authentic flavors with a modern presentation.',
-                'photo' => 'https://static.wixstatic.com/media/dea205_2f3a712b224041ae92aa78009637e4ae~mv2.png?originWidth=384&originHeight=384',
-            ],
-            [
-                'name' => 'Chef Dimas',
-                'role' => 'Sous Chef',
-                'specialty' => 'Seasonal Menus',
-                'bio' => 'Dedicated to fresh ingredients and vibrant seasonal dishes.',
-                'photo' => 'https://static.wixstatic.com/media/dea205_2f3a712b224041ae92aa78009637e4ae~mv2.png?originWidth=384&originHeight=384',
-            ],
-            [
-                'name' => 'Alya Rahman',
-                'role' => 'Restaurant Manager',
-                'specialty' => 'Guest Experience',
-                'bio' => 'Ensures every guest feels welcomed and celebrated.',
-                'photo' => 'https://static.wixstatic.com/media/dea205_2f3a712b224041ae92aa78009637e4ae~mv2.png?originWidth=384&originHeight=384',
-            ],
-            [
-                'name' => 'Rizky Hanif',
-                'role' => 'Culinary Curator',
-                'specialty' => 'Menu Storytelling',
-                'bio' => 'Brings cultural context and storytelling to every dish served.',
-                'photo' => 'https://static.wixstatic.com/media/dea205_2f3a712b224041ae92aa78009637e4ae~mv2.png?originWidth=384&originHeight=384',
-            ],
+            // [
+            //     'name' => 'Chef Lina',
+            //     'role' => 'Head Chef',
+            //     'specialty' => 'Traditional Sundanese Cuisine',
+            //     'bio' => 'Passionate about preserving authentic flavors with a modern presentation.',
+            //     'photo' => 'https://static.wixstatic.com/media/dea205_2f3a712b224041ae92aa78009637e4ae~mv2.png?originWidth=384&originHeight=384',
+            // ],
+            // [
+            //     'name' => 'Chef Dimas',
+            //     'role' => 'Sous Chef',
+            //     'specialty' => 'Seasonal Menus',
+            //     'bio' => 'Dedicated to fresh ingredients and vibrant seasonal dishes.',
+            //     'photo' => 'https://static.wixstatic.com/media/dea205_2f3a712b224041ae92aa78009637e4ae~mv2.png?originWidth=384&originHeight=384',
+            // ],
+            // [
+            //     'name' => 'Alya Rahman',
+            //     'role' => 'Restaurant Manager',
+            //     'specialty' => 'Guest Experience',
+            //     'bio' => 'Ensures every guest feels welcomed and celebrated.',
+            //     'photo' => 'https://static.wixstatic.com/media/dea205_2f3a712b224041ae92aa78009637e4ae~mv2.png?originWidth=384&originHeight=384',
+            // ],
+            // [
+            //     'name' => 'Rizky Hanif',
+            //     'role' => 'Culinary Curator',
+            //     'specialty' => 'Menu Storytelling',
+            //     'bio' => 'Brings cultural context and storytelling to every dish served.',
+            //     'photo' => 'https://static.wixstatic.com/media/dea205_2f3a712b224041ae92aa78009637e4ae~mv2.png?originWidth=384&originHeight=384',
+            // ],
         ];
     @endphp
 

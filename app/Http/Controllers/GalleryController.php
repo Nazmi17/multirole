@@ -5,39 +5,43 @@ namespace App\Http\Controllers;
 use App\Models\Album;
 use App\Models\Gallery;
 use App\Models\Category;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate; // Gunakan Gate agar sama dengan ArticleController
 
 class GalleryController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Gallery::latest();
+        $query = Gallery::with('categories'); 
 
-        if ($request->has('search') && $request->search != '') {
+        if ($request->filled('search')) {
             $query->where('title', 'like', "%" . $request->search . "%");
         }
 
-        $galleries = $query->paginate(10)->withQueryString();
+        $galleries = $query->latest()->paginate(10)->withQueryString();
         return view('gallery.index', compact('galleries'));
     }
 
-    public function create() 
+    public function create()
     {
         $albums = Album::all();
         $categories = Category::all();
         return view('gallery.create', compact('albums', 'categories'));
     }
 
-   public function store(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'album_id' => 'nullable|exists:albums,id',
             'title' => 'required|string|max:255',
-            'image' => 'required|image|mimes:jpeg,png,jpg|max:5048', 
-            'categories' => 'array',
+            'caption' => 'nullable|string',
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5048',
+            
+            // Validasi Array Kategori
+            'categories' => 'nullable|array',
+            'categories.*' => 'exists:categories,id',
         ]);
 
         $imagePath = $request->file('image')->store('galleries', 'public');
@@ -50,27 +54,38 @@ class GalleryController extends Controller
             'image' => $imagePath,
         ]);
 
-        // Simpan Relasi Categories (Attach)
-        if ($request->has('categories')) {
-            $gallery->categories()->attach($request->categories);
-        }
+        // Gunakan sync() agar konsisten. 
+        // Logic: Jika ada categories, sync. Jika null, sync array kosong [].
+        $gallery->categories()->sync($request->categories ?? []);
 
         return redirect()->route('galleries.index')->with('success', 'Foto berhasil diupload!');
     }
 
     public function edit(Gallery $gallery)
     {
+        // Opsional: Tambahkan Gate Authorization
+        // Gate::authorize('update', $gallery); 
+
         $albums = Album::all();
         $categories = Category::all();
+        
         return view('gallery.edit', compact('gallery', 'albums', 'categories'));
     }
 
     public function update(Request $request, Gallery $gallery)
     {
+        // Opsional: Tambahkan Gate Authorization
+        // Gate::authorize('update', $gallery);
+
         $request->validate([
             'album_id' => 'nullable|exists:albums,id',
             'title' => 'required|string|max:255',
-            'image' => 'image|mimes:jpeg,png,jpg|max:5048', 
+            'caption' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5048',
+            
+            // Validasi Array Kategori
+            'categories' => 'nullable|array',
+            'categories.*' => 'exists:categories,id',
         ]);
 
         $data = [
@@ -78,18 +93,17 @@ class GalleryController extends Controller
             'title' => $request->title,
             'caption' => $request->caption,
         ];
-        
+
         if ($request->hasFile('image')) {
-            if (Storage::disk('public')->exists($gallery->image)) {
+            if ($gallery->image && Storage::disk('public')->exists($gallery->image)) {
                 Storage::disk('public')->delete($gallery->image);
             }
-
-            $imagePath = $request->file('image')->store('galleries', 'public');
-            $data['image'] = $imagePath;
+            $data['image'] = $request->file('image')->store('galleries', 'public');
         }
 
         $gallery->update($data);
 
+        // SYNC: Otomatis hapus yang tidak dicentang, tambah yang dicentang baru
         $gallery->categories()->sync($request->categories ?? []);
 
         return redirect()->route('galleries.index')->with('success', 'Foto berhasil diupdate!');
@@ -97,10 +111,15 @@ class GalleryController extends Controller
 
     public function destroy(Gallery $gallery)
     {
-        if (Storage::disk('public')->exists($gallery->image)) {
+        // Gate::authorize('delete', $gallery);
+
+        if ($gallery->image && Storage::disk('public')->exists($gallery->image)) {
             Storage::disk('public')->delete($gallery->image);
         }
 
+        // Relasi pivot di table 'category_gallery' akan otomatis terhapus 
+        // JIKA di migration kamu sudah set ->onDelete('cascade')
+        
         $gallery->delete();
 
         return redirect()->route('galleries.index')->with('success', 'Foto berhasil dihapus!');

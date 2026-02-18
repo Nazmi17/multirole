@@ -6,6 +6,9 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Event; 
 use Illuminate\Auth\Events\Verified;  
 use App\Listeners\SendWelcomeEmail;
+use Illuminate\Support\Facades\Gate; // <--- Pastikan import Gate
+use App\Models\Article;              // <--- Import Model
+use App\Policies\ArticlePolicy;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,5 +29,7 @@ class AppServiceProvider extends ServiceProvider
             Verified::class,
             SendWelcomeEmail::class,
         );
+
+        Gate::policy(Article::class, ArticlePolicy::class);
     }
 }

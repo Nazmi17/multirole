@@ -82,10 +82,15 @@ class User extends Authenticatable implements MustVerifyEmail
                 return url('storage/' . $this->avatar);
             },
         );
-    }
+    }   
 
     public function isOnline()
     {
         return Cache::has('user-is-online-' . $this->id);
+    }
+
+    public function articles()
+    {
+        return $this->hasMany(Article::class);
     }
 }

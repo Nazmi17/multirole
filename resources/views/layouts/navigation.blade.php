@@ -1,13 +1,22 @@
 <nav class="flex flex-col h-full bg-white border-r border-gray-100">
     <div class="flex items-center justify-center h-16 px-4 border-b border-gray-100 shrink-0">
-        <a href="{{ route('dashboard') }}">
-            <x-application-logo class="block w-auto h-9 text-gray-800 fill-current" />
-        </a>
+        <a href="{{ route('home') }}" class="flex items-center gap-3 group">
+                <div class="bg-secondary rounded-2xl w-10 h-10 flex items-center justify-center shadow-md group-hover:scale-110 transition duration-300">
+                    <span class="font-heading text-2xl text-secondary-foreground font-bold">N</span>
+                </div>
+                <div>
+                    <h1 class="font-heading text-xl md:text-xl text-foreground font-bold">
+                        Nazmi Restaurant
+                    </h1>
+                </div>
+            </a>
     </div>
 
     <div class="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
+        
+        {{-- DASHBOARD --}}
         @if (auth()->user()->hasRole('user'))
-            <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="block w-full text-left pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('dashboard') ? 'border-indigo-400 text-indigo-700 bg-indigo-50 focus:outline-none focus:text-indigo-800 focus:bg-indigo-100 focus:border-indigo-700' : 'border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:text-gray-800 focus:bg-gray-50 focus:border-gray-300' }} text-base font-medium transition duration-150 ease-in-out">
+            <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="block w-full text-left pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('dashboard') ? 'border-indigo-400 text-indigo-700 bg-indigo-50' : 'border-transparent text-gray-600 hover:bg-gray-50' }} text-base font-medium transition">
                 {{ __('Dashboard') }}
             </x-nav-link>
         @elseif (auth()->user()->hasRole('admin'))
@@ -16,12 +25,40 @@
             </x-nav-link>
         @endif
 
-        @can('view users')
-            <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')" class="block w-full text-left pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.users.*') ? 'border-indigo-400 text-indigo-700 bg-indigo-50' : 'border-transparent text-gray-600 hover:bg-gray-50' }} text-base font-medium transition">
-                {{ __('User Management') }}
+        {{-- [BARU] MENU ARTIKEL UNTUK PENULIS (USER) --}}
+        {{-- Tampilkan jika user punya izin membuat artikel --}}
+        @can('create articles') 
+            <x-nav-link :href="route('articles.index')" :active="request()->routeIs('articles.*')" class="block w-full text-left pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('articles.*') ? 'border-indigo-400 text-indigo-700 bg-indigo-50' : 'border-transparent text-gray-600 hover:bg-gray-50' }} text-base font-medium transition">
+                {{ __('My Articles') }}
             </x-nav-link>
         @endcan
 
+        {{-- [BARU] MENU REVIEW UNTUK EDITOR --}}
+        {{-- Tampilkan hanya jika user punya izin publish (approve/reject) --}}
+        @can('publish articles')
+            <div class="pt-4 pb-1 border-t border-gray-200">
+                <div class="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Editorial
+                </div>
+                <x-nav-link :href="route('admin.articles.index')" :active="request()->routeIs('admin.articles.*')" class="block w-full text-left pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.articles.*') ? 'border-indigo-400 text-indigo-700 bg-indigo-50' : 'border-transparent text-gray-600 hover:bg-gray-50' }} text-base font-medium transition">
+                    {{ __('Review Articles') }}
+                </x-nav-link>
+            </div>
+        @endcan
+
+        {{-- USER MANAGEMENT --}}
+        @can('view users')
+            <div class="pt-4 pb-1 border-t border-gray-200"> {{-- Separator Biar Rapi --}}
+                <div class="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                    Administration
+                </div>
+                <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')" class="block w-full text-left pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('admin.users.*') ? 'border-indigo-400 text-indigo-700 bg-indigo-50' : 'border-transparent text-gray-600 hover:bg-gray-50' }} text-base font-medium transition">
+                    {{ __('User Management') }}
+                </x-nav-link>
+            </div>
+        @endcan
+
+        {{-- DATA MANAGEMENT --}}
         <x-nav-link :href="route('categories.index')" :active="request()->routeIs('categories.*')" class="block w-full text-left pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('categories.*') ? 'border-indigo-400 text-indigo-700 bg-indigo-50' : 'border-transparent text-gray-600 hover:bg-gray-50' }} text-base font-medium transition">
                 {{ __('Category Management') }}
         </x-nav-link>
@@ -33,6 +70,12 @@
         <x-nav-link :href="route('albums.index')" :active="request()->routeIs('albums.*')" class="block w-full text-left pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('albums.*') ? 'border-indigo-400 text-indigo-700 bg-indigo-50' : 'border-transparent text-gray-600 hover:bg-gray-50' }} text-base font-medium transition">
                 {{ __('Album Management') }}
         </x-nav-link>
+
+        <div class="mt-auto">
+            <x-nav-link :href="route('home')" :active="request()->routeIs('home')" class="block w-full text-left pl-3 pr-4 py-2 border-l-4 {{ request()->routeIs('home') ? 'border-indigo-400 text-indigo-700 bg-indigo-50' : 'border-transparent text-gray-600 hover:bg-gray-50' }} text-base font-medium transition">
+                <strong>{{ __('Kembali ke Beranda') }}</strong>
+            </x-nav-link>
+        </div>
     </div>
 
     <div class="p-4 border-t border-gray-200">
