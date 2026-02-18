@@ -114,7 +114,7 @@
                                     View Gallery <span class="w-5 h-5 group-hover:translate-x-1 transition-transform">📰</span>
                                 </a>
                                 <a
-                                    href="{{ route('gallery') }}"
+                                    href="{{ route('public.gallery.index') }}"
                                     class="group px-8 py-4 bg-white text-foreground border-2 border-transparent hover:border-secondary/30 rounded-2xl font-bold text-lg shadow-sm hover:shadow-md transition-all duration-300 flex items-center gap-2"
                                 >
                                     View Gallery <span class="w-5 h-5 group-hover:translate-x-1 transition-transform">🖼️</span>

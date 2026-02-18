@@ -18,8 +18,11 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->string('cover_image')->nullable();
             $table->string('file_path');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->boolean('is_login_required')->default(false);
+            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->boolean('is_active')->default(true); // Opsi untuk menyembunyikan e-book tanpa menghapus
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
