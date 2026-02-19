@@ -11,6 +11,8 @@
                 
                 <form method="POST" action="{{ route('galleries.update', $gallery->id) }}" enctype="multipart/form-data"
                     x-data="{ 
+                        {{-- LOGIC: Cek apakah data lama punya video_url, jika ya set type 'video', jika tidak 'photo' --}}
+                        type: '{{ old('type', $gallery->video_url ? 'video' : 'photo') }}',
                         title: '{{ old('title', $gallery->title) }}',
                         get isComplete() {
                             return this.title.trim().length > 0;
@@ -19,6 +21,22 @@
                     
                     @csrf
                     @method('PUT')
+
+                    {{-- PILIHAN TIPE KONTEN (WAJIB ADA AGAR CONTROLLER TIDAK ERROR) --}}
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Konten</label>
+                        <div class="flex items-center space-x-4">
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" name="type" value="photo" x-model="type" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700">Foto</span>
+                            </label>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="radio" name="type" value="video" x-model="type" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700">Video (YouTube/TikTok/IG)</span>
+                            </label>
+                        </div>
+                        @error('type') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
 
                     {{-- Judul --}}
                     <div class="mb-4">
@@ -35,11 +53,10 @@
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">{{ old('caption', $gallery->caption) }}</textarea>
                     </div>
 
-                    {{-- Upload Gambar (Edit) --}}
-                    <div class="mb-4">
-                        <label for="image" class="block text-sm font-medium text-gray-700">Ganti Cover (Opsional)</label>
+                    {{-- AREA INPUT FOTO (Hanya muncul jika type == photo) --}}
+                    <div x-show="type === 'photo'" class="mb-4 bg-gray-50 p-4 rounded border">
+                        <label for="image" class="block text-sm font-medium text-gray-700">Ganti Foto (Opsional)</label>
                         
-                        {{-- Preview Gambar Lama --}}
                         @if($gallery->image)
                             <div class="mb-2">
                                 <span class="text-xs text-gray-500 block mb-1">Gambar saat ini:</span>
@@ -58,16 +75,33 @@
                         @error('image') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
 
+                    {{-- AREA INPUT VIDEO (Hanya muncul jika type == video) --}}
+                    <div x-show="type === 'video'" class="mb-4 bg-indigo-50 p-4 rounded border border-indigo-100" style="display: none;">
+                        <label for="video_url" class="block text-sm font-medium text-gray-700">Link Video</label>
+                        <input type="url" name="video_url" id="video_url" 
+                            value="{{ old('video_url', $gallery->video_url) }}"
+                            placeholder="https://tiktok.com/... atau https://instagram.com/..."
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        <p class="mt-1 text-xs text-gray-500">Link TikTok/Instagram/YouTube.</p>
+                        @error('video_url') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        
+                        {{-- Input Cover Manual untuk Video (Opsional) --}}
+                        <div class="mt-3 pt-3 border-t border-indigo-200">
+                            <label class="block text-sm font-medium text-gray-700">Ganti Cover Video (Opsional)</label>
+                            @if($gallery->image && $gallery->video_url)
+                                <img src="{{ asset('storage/' . $gallery->image) }}" class="h-20 w-auto object-cover rounded border mb-2">
+                            @endif
+                            <input type="file" name="image" accept="image/*" class="mt-1 block w-full text-sm text-gray-500">
+                        </div>
+                    </div>
+
                     <div class="mb-4">
                         <label for="album_id" class="block text-sm font-medium text-gray-700">Album (Opsional)</label>
                         <select name="album_id" id="album_id" 
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                            
                             <option value="">-- Tanpa Album --</option>
-                            
                             @foreach($albums as $album)
                                 <option value="{{ $album->id }}" 
-                                    {{-- Cek apakah ID album cocok dengan data gallery saat ini --}}
                                     {{ (old('album_id', $gallery->album_id) == $album->id) ? 'selected' : '' }}>
                                     {{ $album->title }}
                                 </option>
@@ -88,9 +122,9 @@
                         </select>
                         @error('categories') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
+
                     <div class="flex items-center justify-end mt-4 gap-6">
                         <a href="{{ route('galleries.index') }}" class="text-gray-600 hover:text-gray-900 mr-4 text-sm">Batal</a>
-                        
                         <button type="submit" 
                             :disabled="!isComplete"
                             :class="!isComplete ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'"

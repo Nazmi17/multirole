@@ -35,30 +35,36 @@ class GalleryController extends Controller
     {
         $request->validate([
             'album_id' => 'nullable|exists:albums,id',
-            'title' => 'required|string|max:255',
-            'caption' => 'nullable|string',
-            'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:5048',
+            'title'    => 'required|string|max:255',
+            'caption'  => 'nullable|string',
             
-            // Validasi Array Kategori
+            // Validasi Kondisional
+            // Kita akan kirim input 'type' ('photo' atau 'video') dari form
+            'type'      => 'required|in:photo,video',
+            'image'     => 'required_if:type,photo|image|mimes:jpeg,png,jpg,webp|max:5048',
+            'video_url' => 'required_if:type,video|url',
+            
             'categories' => 'nullable|array',
             'categories.*' => 'exists:categories,id',
         ]);
 
-        $imagePath = $request->file('image')->store('galleries', 'public');
+        $data = [
+            'user_id'   => Auth::id(),
+            'album_id'  => $request->album_id,
+            'title'     => $request->title,
+            'caption'   => $request->caption,
+            'video_url' => ($request->type == 'video') ? $request->video_url : null,
+        ];
 
-        $gallery = Gallery::create([
-            'user_id' => Auth::id(),
-            'album_id' => $request->album_id,
-            'title' => $request->title,
-            'caption' => $request->caption,
-            'image' => $imagePath,
-        ]);
+        // Handle Upload Gambar (Jika tipe photo, atau tipe video tapi user upload cover custom)
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('galleries', 'public');
+        }
 
-        // Gunakan sync() agar konsisten. 
-        // Logic: Jika ada categories, sync. Jika null, sync array kosong [].
+        $gallery = Gallery::create($data);
         $gallery->categories()->sync($request->categories ?? []);
 
-        return redirect()->route('galleries.index')->with('success', 'Foto berhasil diupload!');
+        return redirect()->route('galleries.index')->with('success', 'Galeri berhasil ditambahkan!');
     }
 
     public function edit(Gallery $gallery)
@@ -72,27 +78,37 @@ class GalleryController extends Controller
         return view('gallery.edit', compact('gallery', 'albums', 'categories'));
     }
 
-    public function update(Request $request, Gallery $gallery)
+   public function update(Request $request, Gallery $gallery)
     {
-        // Opsional: Tambahkan Gate Authorization
-        // Gate::authorize('update', $gallery);
-
         $request->validate([
-            'album_id' => 'nullable|exists:albums,id',
-            'title' => 'required|string|max:255',
-            'caption' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5048',
+            'album_id'  => 'nullable|exists:albums,id',
+            'title'     => 'required|string|max:255',
+            'type'      => 'required|in:photo,video',
             
-            // Validasi Array Kategori
-            'categories' => 'nullable|array',
-            'categories.*' => 'exists:categories,id',
+            // Saat update, image wajib jika tipe photo DAN belum ada gambar sebelumnya
+            'image'     => ['nullable', 'image', 'max:5048', 
+                            function ($attribute, $value, $fail) use ($request, $gallery) {
+                                if ($request->type == 'photo' && !$value && !$gallery->image) {
+                                    $fail('Gambar wajib diupload untuk tipe Foto.');
+                                }
+                            }],
+            'video_url' => 'required_if:type,video|url',
         ]);
 
         $data = [
             'album_id' => $request->album_id,
-            'title' => $request->title,
-            'caption' => $request->caption,
+            'title'    => $request->title,
+            'caption'  => $request->caption,
         ];
+
+        // Logika Ganti Tipe
+        if ($request->type == 'video') {
+            $data['video_url'] = $request->video_url;
+            // Opsional: Hapus image lama jika beralih ke video murni (tergantung kebutuhan)
+            // Tapi saran saya biarkan saja image lama sebagai backup/cover
+        } else {
+            $data['video_url'] = null; // Hapus URL jika beralih ke foto
+        }
 
         if ($request->hasFile('image')) {
             if ($gallery->image && Storage::disk('public')->exists($gallery->image)) {
@@ -102,11 +118,9 @@ class GalleryController extends Controller
         }
 
         $gallery->update($data);
-
-        // SYNC: Otomatis hapus yang tidak dicentang, tambah yang dicentang baru
         $gallery->categories()->sync($request->categories ?? []);
 
-        return redirect()->route('galleries.index')->with('success', 'Foto berhasil diupdate!');
+        return redirect()->route('galleries.index')->with('success', 'Galeri berhasil diupdate!');
     }
 
     public function destroy(Gallery $gallery)
