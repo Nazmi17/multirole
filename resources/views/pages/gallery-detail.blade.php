@@ -27,25 +27,71 @@
                     {{-- Masonry-like Grid using Column count for varying aspect ratios --}}
                     <div class="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
                         @foreach ($album->galleries as $photo)
-                            <div class="break-inside-avoid relative group rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition duration-300 bg-gray-100">
-                                <img
-                                    src="{{ Storage::url($photo->image) }}"
-                                    alt="{{ $photo->title }}"
-                                    class="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
-                                    loading="lazy"
-                                />
+                            <div class="break-inside-avoid relative group rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition duration-300 bg-gray-100 border border-gray-200">
                                 
-                                {{-- Overlay Info --}}
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                                    <h3 class="text-white font-heading text-lg font-bold">
-                                        {{ $photo->title }}
-                                    </h3>
-                                    @if($photo->caption)
-                                        <p class="text-gray-200 text-sm font-paragraph line-clamp-2 mt-1">
-                                            {{ $photo->caption }}
-                                        </p>
+                                {{-- CEK APAKAH ADA VIDEO URL --}}
+                                @if($photo->video_url && $embed = $photo->video_embed)
+
+                                    {{-- A. YOUTUBE (16:9 Landscape) --}}
+                                    @if($embed['type'] == 'youtube')
+                                        <div class="relative w-full aspect-video">
+                                            <iframe src="{{ $embed['url'] }}" class="absolute top-0 left-0 w-full h-full" frameborder="0" allowfullscreen></iframe>
+                                        </div>
+
+                                    {{-- B. INSTAGRAM (Biasanya Kotak atau Vertikal) --}}
+                                    @elseif($embed['type'] == 'instagram')
+                                        {{-- Instagram butuh tinggi fix atau lebih besar. Kita set min-height --}}
+                                        <div class="w-full overflow-hidden bg-white">
+                                            <iframe src="{{ $embed['url'] }}" class="w-full aspect-[4/5] md:aspect-[9/16]" frameborder="0" scrolling="no" allowtransparency="true"></iframe>
+                                        </div>
+
+                                    {{-- C. TIKTOK (Vertikal) --}}
+                                    @elseif($embed['type'] == 'tiktok')
+                                        <div class="w-full overflow-hidden bg-black">
+                                            <iframe src="{{ $embed['url'] }}" class="w-full h-[550px]" frameborder="0" allowfullscreen></iframe>
+                                        </div>
                                     @endif
-                                </div>
+                                    
+                                    {{-- JUDUL (Ditaruh di bawah video agar tidak menutupi player) --}}
+                                    <div class="p-4 bg-white border-t">
+                                        <h3 class="font-heading text-lg font-bold text-gray-800 line-clamp-1">
+                                            {{-- Icon Kecil Penanda Platform --}}
+                                            @if($embed['type'] == 'youtube') <span class="text-red-600">▶</span>
+                                            @elseif($embed['type'] == 'instagram') <span class="text-pink-600">📷</span>
+                                            @elseif($embed['type'] == 'tiktok') <span class="text-black">🎵</span>
+                                            @endif
+                                            {{ $photo->title }}
+                                        </h3>
+                                        @if($photo->caption)
+                                            <p class="text-gray-500 text-sm mt-1 line-clamp-2">{{ $photo->caption }}</p>
+                                        @endif
+                                    </div>
+
+                                @else
+                                    {{-- FALLBACK: FOTO BIASA / LINK VIDEO NON-EMBED --}}
+                                    <div class="relative">
+                                        <img src="{{ $photo->thumbnail_url }}" alt="{{ $photo->title }}" class="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500">
+                                        
+                                        {{-- Jika video tapi tidak terdeteksi (misal link Google Drive), tetap kasih tombol play --}}
+                                        @if($photo->video_url)
+                                            <a href="{{ $photo->video_url }}" target="_blank" class="absolute inset-0 bg-black/40 flex items-center justify-center group-hover:bg-black/50 transition z-10">
+                                                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg">
+                                                    <svg class="w-6 h-6 text-gray-800 ml-1" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                                </div>
+                                            </a>
+                                            <div class="absolute top-2 right-2 bg-black/70 text-white text-[10px] px-2 py-1 rounded font-bold z-10">EXTERNAL LINK</div>
+                                        @endif
+                                        
+                                        {{-- Overlay Judul untuk Foto --}}
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6 pointer-events-none">
+                                            <h3 class="text-white font-heading text-lg font-bold">{{ $photo->title }}</h3>
+                                            @if($photo->caption)
+                                                <p class="text-gray-200 text-sm font-paragraph line-clamp-2 mt-1">{{ $photo->caption }}</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endif
+
                             </div>
                         @endforeach
                     </div>
